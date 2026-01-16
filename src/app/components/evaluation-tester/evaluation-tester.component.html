@@ -1,0 +1,74 @@
+<div class="container">
+    <div class="header">
+        <button mat-stroked-button (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+            Back to SLA
+        </button>
+        <h1>Test Evaluation: {{ sla?.slaName }}</h1>
+    </div>
+
+    <mat-card class="input-card">
+        <mat-card-header>
+            <mat-card-title>Context Input (JSON)</mat-card-title>
+            <mat-card-subtitle>Edit the JSON below to specify the context values.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+            <mat-form-field appearance="outline" class="json-textarea">
+                <mat-label>JSON Context</mat-label>
+                <textarea matInput [(ngModel)]="contextJson" rows="10"></textarea>
+            </mat-form-field>
+        </mat-card-content>
+        <mat-card-actions align="end">
+            <button mat-raised-button color="primary" (click)="evaluate()">
+                <mat-icon>play_arrow</mat-icon>
+                Evaluate
+            </button>
+        </mat-card-actions>
+    </mat-card>
+
+    <div *ngIf="response" class="result-section">
+        <mat-card class="result-card">
+            <mat-card-header>
+                <mat-card-title>Evaluation Result</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="result-banner" [class.success]="response.result" [class.fail]="!response.result">
+                    <mat-icon>{{ response.result ? 'check_circle' : 'error' }}</mat-icon>
+                    <span class="result-text">Result: {{ response.resultValue }} ({{ response.result }})</span>
+                </div>
+
+                <div class="result-details">
+                    <div class="detail-row">
+                        <strong>Matched Rule:</strong>
+                        <mat-chip-set>
+                            <mat-chip>{{ response.matchedRuleName || 'N/A' }}</mat-chip>
+                            <mat-chip *ngIf="response.matchedRuleId" class="id-chip">ID: {{ response.matchedRuleId
+                                }}</mat-chip>
+                        </mat-chip-set>
+                    </div>
+
+                    <div class="detail-row">
+                        <strong>Total Weight Score:</strong>
+                        <span class="score-badge">{{ response.totalWeight | number:'1.2-2' }}</span>
+                    </div>
+
+                    <mat-expansion-panel *ngIf="response.matchedRule" class="matched-rule-panel">
+                        <mat-expansion-panel-header>
+                            <mat-panel-title>Matched Rule Details (JSON)</mat-panel-title>
+                        </mat-expansion-panel-header>
+                        <pre class="json-display">{{ response.matchedRule | json }}</pre>
+                    </mat-expansion-panel>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
+    <mat-card *ngIf="error" class="error-card">
+        <mat-card-header>
+            <mat-card-title class="error-title">Error</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <pre class="error-display">{{ error }}</pre>
+        </mat-card-content>
+    </mat-card>
+</div>

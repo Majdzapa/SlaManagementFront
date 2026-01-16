@@ -1,0 +1,165 @@
+<div class="container">
+    <div class="header">
+        <button mat-stroked-button (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+        </button>
+        <h1>{{ isNew ? 'Create New SLA' : 'Edit SLA: ' + sla.slaName }}</h1>
+    </div>
+
+    <mat-card class="config-card">
+        <mat-card-header>
+            <mat-card-title>General Configuration</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div class="form-row">
+                <mat-form-field appearance="outline">
+                    <mat-label>SLA Name</mat-label>
+                    <input matInput [(ngModel)]="sla.slaName" placeholder="Enter SLA Name">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>SLA Type</mat-label>
+                    <input matInput [(ngModel)]="sla.slaType" placeholder="e.g. SendSwiftSLA">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Context Type</mat-label>
+                    <mat-select [(ngModel)]="sla.contextType" (selectionChange)="onContextTypeChange()">
+                        <mat-option *ngFor="let ctx of availableContexts" [value]="ctx.className">
+                            {{ ctx.displayName }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Result Type</mat-label>
+                    <mat-select [(ngModel)]="sla.resultType" (selectionChange)="onResultTypeChange()">
+                        <mat-option *ngFor="let res of availableResultTypes" [value]="res.className">
+                            {{ res.displayName }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+
+            <div class="form-actions">
+                <mat-checkbox [(ngModel)]="sla.active">Active</mat-checkbox>
+                <span class="spacer"></span>
+                <button mat-raised-button color="primary" (click)="saveSla()">
+                    <mat-icon>save</mat-icon>
+                    Save Configuration
+                </button>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <div *ngIf="!isNew" class="rules-section">
+        <mat-card>
+            <mat-card-header>
+                <mat-card-title>Decision Table (Rules)</mat-card-title>
+                <mat-card-subtitle>
+                    Rules are scored based on matched field weights. The highest score wins.
+                </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="table-container">
+                    <table class="decision-table">
+                        <thead>
+                            <tr>
+                                <th class="rule-name-col">Rule Name</th>
+                                <th *ngFor="let field of currentContextFields" class="field-col">
+                                    {{ field.fieldName }}
+                                    <div class="field-weight">Weight: {{ field.metricWeight | number:'1.1-1' }}</div>
+                                </th>
+                                <th class="result-col">Result</th>
+                                <th class="score-col">Score</th>
+                                <th class="actions-col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let rule of rules; let i = index">
+                                <td>
+                                    <mat-form-field appearance="fill" class="compact-input">
+                                        <input matInput [(ngModel)]="rule.ruleName">
+                                    </mat-form-field>
+                                </td>
+
+                                <td *ngFor="let field of currentContextFields">
+                                    <mat-form-field appearance="fill" class="compact-input">
+                                        <input matInput [(ngModel)]="rule['conditionsObj'][field.fieldName]"
+                                            [placeholder]="field.fieldName">
+                                    </mat-form-field>
+                                </td>
+
+                                <td>
+                                    <ng-container *ngIf="availableResultInstances.length > 0; else primitiveResult">
+                                        <mat-form-field appearance="fill" class="compact-input">
+                                            <mat-select [(ngModel)]="rule.resultInstanceId">
+                                                <mat-option [value]="null">-- Select --</mat-option>
+                                                <mat-option *ngFor="let inst of availableResultInstances"
+                                                    [value]="inst.id">
+                                                    {{ inst.id }} - {{ inst.media || inst.name || 'Instance' }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </ng-container>
+                                    <ng-template #primitiveResult>
+                                        <div [ngSwitch]="sla.resultType">
+                                            <mat-form-field *ngSwitchCase="'BOOLEAN'" appearance="fill"
+                                                class="compact-input">
+                                                <mat-select [(ngModel)]="rule.resultValue">
+                                                    <mat-option value="true">True</mat-option>
+                                                    <mat-option value="false">False</mat-option>
+                                                </mat-select>
+                                            </mat-form-field>
+                                            <mat-form-field *ngSwitchCase="'INTEGER'" appearance="fill"
+                                                class="compact-input">
+                                                <input matInput type="number" [(ngModel)]="rule.resultValue">
+                                            </mat-form-field>
+                                            <mat-form-field *ngSwitchDefault appearance="fill" class="compact-input">
+                                                <input matInput [(ngModel)]="rule.resultValue">
+                                            </mat-form-field>
+                                        </div>
+                                    </ng-template>
+                                </td>
+
+                                <td class="score-cell">
+                                    {{ calculateScore(rule) | number:'1.2-2' }}
+                                </td>
+
+                                <td>
+                                    <div class="rule-actions">
+                                        <button mat-icon-button color="primary" (click)="saveRule(rule)"
+                                            matTooltip="Save Rule">
+                                            <mat-icon>check_circle</mat-icon>
+                                        </button>
+                                        <button mat-icon-button color="warn" (click)="deleteRule(rule.id!, i)"
+                                            matTooltip="Delete Rule">
+                                            <mat-icon>delete_outline</mat-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="rules-footer">
+                    <button mat-button color="primary" (click)="addRule()">
+                        <mat-icon>add</mat-icon>
+                        Add New Rule
+                    </button>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="test-card">
+            <mat-card-content>
+                <button mat-flat-button color="accent" (click)="testEvaluation()">
+                    <mat-icon>play_arrow</mat-icon>
+                    Go to Evaluation Tester
+                </button>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

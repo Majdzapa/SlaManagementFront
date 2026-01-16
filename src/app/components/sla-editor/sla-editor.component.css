@@ -1,0 +1,133 @@
+.container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    margin: 0 0 0 16px;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.config-card {
+    margin-bottom: 24px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.form-row mat-form-field {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+.rules-section {
+    margin-top: 32px;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin: 16px -16px;
+    padding: 0 16px;
+}
+
+.decision-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.decision-table th {
+    text-align: left;
+    padding: 12px;
+    background-color: #fafafa;
+    border-bottom: 2px solid #eee;
+    font-weight: 500;
+    vertical-align: bottom;
+}
+
+.field-weight {
+    font-size: 11px;
+    color: #777;
+    font-weight: normal;
+}
+
+.decision-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+
+.compact-input {
+    width: 100%;
+}
+
+.compact-input ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+}
+
+.rule-name-col {
+    width: 180px;
+}
+
+.field-col {
+    min-width: 150px;
+}
+
+.result-col {
+    width: 220px;
+}
+
+.score-col {
+    width: 80px;
+    text-align: center;
+}
+
+.actions-col {
+    width: 120px;
+    text-align: right;
+}
+
+.score-cell {
+    font-weight: bold;
+    text-align: center;
+    color: #3f51b5;
+}
+
+.rule-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.rules-footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.test-card {
+    margin-top: 24px;
+    text-align: center;
+}

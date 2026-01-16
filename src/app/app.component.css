@@ -1,0 +1,15 @@
+.main-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+.content-area {
+    min-height: calc(100vh - 64px);
+    background-color: #f8fafc;
+}
