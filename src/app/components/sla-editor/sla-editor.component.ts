@@ -5,146 +5,35 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SlaService } from '../../sla.service';
 import { SlaConfiguration, SlaRule, ContextClassInfo, ContextFieldInfo } from '../../models';
 
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatCardModule } from '@angular/material/card';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
+
 @Component({
     selector: 'app-sla-editor',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule],
-    template: `
-    <div class="container-fluid" style="padding: 20px;">
-      <div class="header" style="margin-bottom: 20px;">
-        <button class="btn btn-secondary" (click)="goBack()">&larr; Back</button>
-        <h2 style="display:inline-block; margin-left:15px;">{{ isNew ? 'Create New SLA' : 'Edit SLA: ' + sla.slaName }}</h2>
-      </div>
-
-      <div class="card p-3 mb-4">
-        <h3>Configuration</h3>
-        <div class="row">
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" class="form-control" [(ngModel)]="sla.slaName" placeholder="SLA Name">
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Type</label>
-                    <input type="text" class="form-control" [(ngModel)]="sla.slaType" placeholder="e.g. SendSwiftSLA">
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Context Type</label>
-                    <select class="form-control" [(ngModel)]="sla.contextType" (change)="onContextTypeChange()">
-                        <option *ngFor="let ctx of availableContexts" [value]="ctx.className">
-                            {{ ctx.displayName }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Result Type</label>
-                    <select class="form-control" [(ngModel)]="sla.resultType" (change)="onResultTypeChange()">
-                        <option *ngFor="let res of availableResultTypes" [value]="res.className">
-                            {{ res.displayName }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-2">
-            <div class="col-md-3">
-                <label><input type="checkbox" [(ngModel)]="sla.active"> Active</label>
-            </div>
-            <div class="col-md-9 text-end">
-                <button class="btn btn-primary" (click)="saveSla()">Save Configuration</button>
-            </div>
-        </div>
-      </div>
-
-      <div *ngIf="!isNew" class="card p-3">
-        <h3>Decision Table (Rules)</h3>
-        <p class="text-muted">Define rules. System checks all rules. The rule with the highest score (sum of matched field weights) wins.</p>
-        
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 150px;">Rule Name</th>
-                        <th *ngFor="let field of currentContextFields">
-                            {{ field.fieldName }}
-                            <br><small class="text-muted">Weight: {{ field.metricWeight | number:'1.1-1' }}</small>
-                        </th>
-                        <th style="width: 200px;">Result</th>
-                        <th style="width: 100px;">Score</th>
-                        <th style="width: 150px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let rule of rules; let i = index">
-                        <td>
-                            <input type="text" [(ngModel)]="rule.ruleName" class="form-control input-sm">
-                        </td>
-                        
-                        <!-- Dynamic Columns for Conditions -->
-                        <td *ngFor="let field of currentContextFields">
-                             <!-- Simple text input for now. Could be enhanced based on fieldType -->
-                             <input type="text" 
-                                    [(ngModel)]="rule['conditionsObj'][field.fieldName]" 
-                                    class="form-control input-sm" 
-                                    [placeholder]="'Value for ' + field.fieldName">
-                        </td>
-
-                        <!-- Result Column -->
-                        <td>
-                           <ng-container *ngIf="availableResultInstances.length > 0; else primitiveResult">
-                                <select [(ngModel)]="rule.resultInstanceId" class="form-control input-sm">
-                                    <option [ngValue]="null">-- Select Instance --</option>
-                                    <option *ngFor="let inst of availableResultInstances" [ngValue]="inst.id">
-                                        {{ inst.id }} - {{ inst.media || inst.name || 'Instance' }}
-                                    </option>
-                                </select>
-                           </ng-container>
-                           <ng-template #primitiveResult>
-                                <div [ngSwitch]="sla.resultType">
-                                    <select *ngSwitchCase="'BOOLEAN'" [(ngModel)]="rule.resultValue" class="form-control input-sm">
-                                        <option value="true">True</option>
-                                        <option value="false">False</option>
-                                    </select>
-                                    <input *ngSwitchCase="'INTEGER'" type="number" [(ngModel)]="rule.resultValue" class="form-control input-sm" placeholder="e.g. 100">
-                                    <input *ngSwitchDefault type="text" [(ngModel)]="rule.resultValue" class="form-control input-sm" placeholder="Result Value">
-                                </div>
-                           </ng-template>
-                        </td>
-                        
-                        <!-- Score Display -->
-                        <td>
-                            <strong>{{ calculateScore(rule) | number:'1.2-2' }}</strong>
-                        </td>
-
-                        <td>
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-success" (click)="saveRule(rule)">Save</button>
-                                <button class="btn btn-sm btn-danger" (click)="deleteRule(rule.id!, i)"> Delete</button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <button class="btn btn-outline-primary" (click)="addRule()">+ Add Row</button>
-      </div>
-
-      <div class="card p-3 mt-4">
-         <h3>Test Evaluation</h3>
-         <button class="btn btn-info" (click)="testEvaluation()">Go to Evaluation Page</button>
-      </div>
-    </div>
-  `,
-    styles: [`
-        .form-control.input-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-    `]
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCheckboxModule,
+        MatCardModule,
+        MatTooltipModule,
+        MatDividerModule
+    ],
+    templateUrl: './sla-editor.component.html',
+    styleUrls: ['./sla-editor.component.css']
 })
 export class SlaEditorComponent implements OnInit {
     sla: SlaConfiguration = {
