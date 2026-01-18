@@ -1,3 +1,5 @@
+@if(slas){
+
 <div class="container">
     <mat-card>
         <mat-card-header>
@@ -11,7 +13,11 @@
         </mat-card-header>
 
         <mat-card-content>
-            <table mat-table [dataSource]="slas" class="mat-elevation-z0">
+            <mat-form-field>
+                <mat-label>Filter</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ium" #input>
+            </mat-form-field>
+            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
                 <!-- ID Column -->
                 <ng-container matColumnDef="id">
                     <th mat-header-cell *matHeaderCellDef> ID </th>
@@ -56,12 +62,14 @@
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef> Actions </th>
                     <td mat-cell *matCellDef="let sla">
+                        <div class="action-styles">
                         <button mat-icon-button color="primary" (click)="editSla(sla.id!)" matTooltip="Edit">
                             <mat-icon>edit</mat-icon>
                         </button>
                         <button mat-icon-button color="warn" (click)="deleteSla(sla.id!)" matTooltip="Delete">
                             <mat-icon>delete</mat-icon>
                         </button>
+                        </div>
                     </td>
                 </ng-container>
 
@@ -76,3 +84,4 @@
         </mat-card-content>
     </mat-card>
 </div>
+}

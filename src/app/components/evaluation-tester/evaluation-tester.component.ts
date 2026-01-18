@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SlaService } from '../../sla.service';
-import { SlaConfiguration, EvaluationResponse, ContextClassInfo } from '../../models';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +10,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+
+import { SlaService } from '../../sla.service';
+import { SlaConfiguration, EvaluationResponse, ContextClassInfo } from '../../models';
 
 @Component({
   selector: 'app-evaluation-tester',
@@ -30,6 +31,7 @@ import { MatInputModule } from '@angular/material/input';
   templateUrl: './evaluation-tester.component.html',
   styleUrls: ['./evaluation-tester.component.css']
 })
+
 export class EvaluationTesterComponent implements OnInit {
   sla?: SlaConfiguration;
   contextJson: string = '{ }';

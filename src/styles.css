@@ -57,3 +57,65 @@ body {
 .mb-4 {
   margin-bottom: 24px;
 }
+
+/* Remove subscript wrapper space for all form fields */
+.no-subscript-space .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+}
+
+.no-subscript-space .mat-mdc-form-field-bottom-align {
+    display: none !important;
+}
+/* Remove all subscript spacing in table */
+.decision-table .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Remove the form field wrapper spacing */
+.decision-table .mat-mdc-form-field-wrapper {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* Make the form field take full height */
+.decision-table .mat-mdc-form-field {
+    height: 100%;
+    margin: 0 !important;
+    display: block;
+}
+
+/* Remove hint wrapper */
+.decision-table .mat-mdc-form-field-hint-wrapper {
+    display: none !important;
+    height: 0 !important;
+}
+
+/* Target the specific cell to remove extra spacing */
+.decision-table td {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+/* Ensure the form field infix fills the cell */
+.decision-table .mat-mdc-form-field-infix {
+    padding: 0 !important;
+    border-top: 0 !important;
+}
+
+/* Remove outline spacing */
+.decision-table .mdc-text-field--outlined {
+    height: 100%;
+}
+
+/* Make text field wrapper fill container */
+.decision-table .mat-mdc-text-field-wrapper {
+    height: 100%;
+    align-items: center;
+    padding: 0 8px !important; /* Adjust based on your preference */
+}

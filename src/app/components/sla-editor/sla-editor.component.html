@@ -62,86 +62,126 @@
                 </mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
+                <div class="filter-container">
+                    <mat-form-field appearance="outline" class="filter-input no-subscript-space">
+                        <mat-label>Filter Rules</mat-label>
+                        <mat-icon matPrefix>search</mat-icon>
+                        <input matInput (keyup)="applyFilter($event)" placeholder="Search rules..." #input>
+                    </mat-form-field>
+                </div>
+
                 <div class="table-container">
-                    <table class="decision-table">
-                        <thead>
-                            <tr>
-                                <th class="rule-name-col">Rule Name</th>
-                                <th *ngFor="let field of currentContextFields" class="field-col">
-                                    {{ field.fieldName }}
-                                    <div class="field-weight">Weight: {{ field.metricWeight | number:'1.1-1' }}</div>
-                                </th>
-                                <th class="result-col">Result</th>
-                                <th class="score-col">Score</th>
-                                <th class="actions-col">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let rule of rules; let i = index">
-                                <td>
-                                    <mat-form-field appearance="fill" class="compact-input">
-                                        <input matInput [(ngModel)]="rule.ruleName">
-                                    </mat-form-field>
-                                </td>
+                    <table mat-table [dataSource]="dataSource" class="mat-elevation-z1 decision-table">
 
-                                <td *ngFor="let field of currentContextFields">
-                                    <mat-form-field appearance="fill" class="compact-input">
-                                        <input matInput [(ngModel)]="rule['conditionsObj'][field.fieldName]"
-                                            [placeholder]="field.fieldName">
-                                    </mat-form-field>
-                                </td>
+                        <!-- Rule Name -->
+                        <ng-container matColumnDef="ruleName">
+                            <th mat-header-cell *matHeaderCellDef> Rule Name </th>
+                            <td mat-cell *matCellDef="let rule">
+                                <mat-form-field appearance="outline">
+                                    <input matInput [(ngModel)]="rule.ruleName">
+                                </mat-form-field>
+                            </td>
+                        </ng-container>
 
-                                <td>
-                                    <ng-container *ngIf="availableResultInstances.length > 0; else primitiveResult">
-                                        <mat-form-field appearance="fill" class="compact-input">
-                                            <mat-select [(ngModel)]="rule.resultInstanceId">
-                                                <mat-option [value]="null">-- Select --</mat-option>
-                                                <mat-option *ngFor="let inst of availableResultInstances"
-                                                    [value]="inst.id">
-                                                    {{ inst.id }} - {{ inst.media || inst.name || 'Instance' }}
-                                                </mat-option>
+                        <!-- Dynamic Context Fields -->
+                        <ng-container *ngFor="let field of currentContextFields" [matColumnDef]="field.fieldName">
+
+                            <th mat-header-cell *matHeaderCellDef>
+                                {{ field.fieldName }}
+                                <div class="field-weight">
+                                    Weight: {{ field.metricWeight | number:'1.1-1' }}
+                                </div>
+                            </th>
+
+                            <td mat-cell *matCellDef="let rule">
+                                <mat-form-field appearance="outline" class="no-subscript-space">
+                                    <input matInput [(ngModel)]="rule.conditionsObj[field.fieldName]"
+                                        [placeholder]="field.fieldName">
+                                </mat-form-field>
+                            </td>
+                        </ng-container>
+
+                        <!-- Result -->
+                        <ng-container matColumnDef="result">
+                            <th mat-header-cell *matHeaderCellDef> Result </th>
+                            <td mat-cell *matCellDef="let rule">
+
+                                <ng-container *ngIf="availableResultInstances.length > 0; else primitiveResult">
+                                    <mat-form-field appearance="fill" class="no-subscript-space">
+                                        <mat-select [(ngModel)]="rule.resultInstanceId">
+                                            <mat-option [value]="null">-- Select --</mat-option>
+                                            <mat-option *ngFor="let inst of availableResultInstances" [value]="inst.id">
+                                                {{ inst.id }} - {{ inst.media || inst.name || 'Instance' }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+                                </ng-container>
+
+                                <ng-template #primitiveResult>
+                                    <div [ngSwitch]="sla.resultType">
+
+                                        <mat-form-field *ngSwitchCase="'BOOLEAN'" appearance="outline"
+                                            class="no-subscript-space">
+                                            <mat-select [(ngModel)]="rule.resultValue">
+                                                <mat-option value="true">True</mat-option>
+                                                <mat-option value="false">False</mat-option>
                                             </mat-select>
                                         </mat-form-field>
-                                    </ng-container>
-                                    <ng-template #primitiveResult>
-                                        <div [ngSwitch]="sla.resultType">
-                                            <mat-form-field *ngSwitchCase="'BOOLEAN'" appearance="fill"
-                                                class="compact-input">
-                                                <mat-select [(ngModel)]="rule.resultValue">
-                                                    <mat-option value="true">True</mat-option>
-                                                    <mat-option value="false">False</mat-option>
-                                                </mat-select>
-                                            </mat-form-field>
-                                            <mat-form-field *ngSwitchCase="'INTEGER'" appearance="fill"
-                                                class="compact-input">
-                                                <input matInput type="number" [(ngModel)]="rule.resultValue">
-                                            </mat-form-field>
-                                            <mat-form-field *ngSwitchDefault appearance="fill" class="compact-input">
-                                                <input matInput [(ngModel)]="rule.resultValue">
-                                            </mat-form-field>
-                                        </div>
-                                    </ng-template>
-                                </td>
 
-                                <td class="score-cell">
-                                    {{ calculateScore(rule) | number:'1.2-2' }}
-                                </td>
+                                        <mat-form-field *ngSwitchCase="'INTEGER'" appearance="outline"
+                                            class="no-subscript-space">
+                                            <input matInput type="number" [(ngModel)]="rule.resultValue">
+                                        </mat-form-field>
 
-                                <td>
-                                    <div class="rule-actions">
-                                        <button mat-icon-button color="primary" (click)="saveRule(rule)"
-                                            matTooltip="Save Rule">
-                                            <mat-icon>check_circle</mat-icon>
-                                        </button>
-                                        <button mat-icon-button color="warn" (click)="deleteRule(rule.id!, i)"
-                                            matTooltip="Delete Rule">
-                                            <mat-icon>delete_outline</mat-icon>
-                                        </button>
+                                        <mat-form-field *ngSwitchDefault appearance="outline"
+                                            class="no-subscript-space">
+                                            <input matInput [(ngModel)]="rule.resultValue">
+                                        </mat-form-field>
+
                                     </div>
-                                </td>
-                            </tr>
-                        </tbody>
+                                </ng-template>
+
+                            </td>
+                        </ng-container>
+
+                        <!-- Score -->
+                        <ng-container matColumnDef="score">
+                            <th mat-header-cell *matHeaderCellDef> Score </th>
+                            <td mat-cell *matCellDef="let rule">
+                                {{ calculateScore(rule) | number:'1.2-2' }}
+                            </td>
+                        </ng-container>
+
+                        <!-- Actions -->
+                        <ng-container matColumnDef="actions">
+                            <th mat-header-cell *matHeaderCellDef> Actions </th>
+                            <td mat-cell *matCellDef="let rule">
+                                <div class="rule-actions">
+                                    <button mat-icon-button color="primary" matTooltip="Save Rule"
+                                        (click)="saveRule(rule); $event.stopPropagation()">
+                                        <mat-icon>check_circle</mat-icon>
+                                    </button>
+
+                                    <button mat-icon-button color="warn" matTooltip="Delete Rule"
+                                        (click)="deleteRule(rule.id!, rules.indexOf(rule)); $event.stopPropagation()">
+                                        <mat-icon>delete_outline</mat-icon>
+                                    </button>
+                                </div>
+                            </td>
+                        </ng-container>
+
+                        <!-- Header + Rows -->
+                        <tr mat-header-row *matHeaderRowDef="displayedRuleColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedRuleColumns;"></tr>
+
+                        <!-- No data -->
+                        <tr class="mat-row" *matNoDataRow>
+                            <td class="mat-cell" [attr.colspan]="displayedRuleColumns.length">
+                                No rules defined.
+                            </td>
+                        </tr>
                     </table>
+
                 </div>
 
                 <div class="rules-footer">

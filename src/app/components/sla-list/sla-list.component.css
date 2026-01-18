@@ -41,3 +41,17 @@ table {
 .mat-column-id {
   width: 60px;
 }
+ .action-styles {
+    flex-direction: row;
+    display: inline-flex;
+
+ }
+
+ table {
+   width: 100%;
+ }
+
+ .mat-mdc-form-field {
+   font-size: 14px;
+   width: 100%;
+ }

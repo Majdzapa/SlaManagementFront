@@ -14,6 +14,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+
 
 @Component({
     selector: 'app-sla-editor',
@@ -22,6 +24,7 @@ import { MatDividerModule } from '@angular/material/divider';
         CommonModule,
         FormsModule,
         RouterModule,
+        MatTableModule,
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
@@ -31,7 +34,8 @@ import { MatDividerModule } from '@angular/material/divider';
         MatCardModule,
         MatTooltipModule,
         MatDividerModule
-    ],
+    ]
+    ,
     templateUrl: './sla-editor.component.html',
     styleUrls: ['./sla-editor.component.css']
 })
@@ -44,12 +48,24 @@ export class SlaEditorComponent implements OnInit {
         active: true
     };
     rules: any[] = []; // Using any to attach conditionsObj
+    dataSource = new MatTableDataSource<any>([]);
     isNew = true;
 
     availableContexts: ContextClassInfo[] = [];
     currentContextFields: ContextFieldInfo[] = [];
     availableResultTypes: ContextClassInfo[] = [];
     availableResultInstances: any[] = [];
+
+
+    get displayedRuleColumns(): string[] {
+        return [
+            'ruleName',
+            ...this.currentContextFields.map(f => f.fieldName),
+            'result',
+            'score',
+            'actions'
+        ];
+    }
 
     constructor(
         private slaService: SlaService,
@@ -94,6 +110,7 @@ export class SlaEditorComponent implements OnInit {
                 }
                 return rule;
             });
+            this.dataSource.data = this.rules;
         });
     }
 
@@ -121,6 +138,7 @@ export class SlaEditorComponent implements OnInit {
             ruleOrder: this.rules.length + 1,
             active: true
         });
+        this.dataSource.data = this.rules;
     }
 
     saveRule(rule: any): void {
@@ -187,8 +205,14 @@ export class SlaEditorComponent implements OnInit {
         if (confirm('Delete rule?')) {
             this.slaService.deleteRule(id).subscribe(() => {
                 this.rules = this.rules.filter(r => r.id !== id);
+                this.dataSource.data = this.rules;
             });
         }
+    }
+
+    applyFilter(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.dataSource.filter = filterValue.trim().toLowerCase();
     }
 
     testEvaluation(): void {
